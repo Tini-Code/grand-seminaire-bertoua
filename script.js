@@ -105,19 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
     lightbox.querySelector('.lightbox-next').addEventListener('click', () => navigate(1));
     lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 
-    // Swipe tactile
+    // Swipe tactile (1 doigt uniquement - ignore le pinch-to-zoom)
     let touchStartX = 0;
     let touchStartY = 0;
+    let isMultiTouch = false;
     lightbox.addEventListener('touchstart', e => {
+      isMultiTouch = e.touches.length > 1;
+      if (isMultiTouch) return;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
     }, { passive: true });
     lightbox.addEventListener('touchmove', e => {
+      if (e.touches.length > 1) { isMultiTouch = true; return; }
+      if (isMultiTouch) return;
       const dx = Math.abs(e.touches[0].clientX - touchStartX);
       const dy = Math.abs(e.touches[0].clientY - touchStartY);
       if (dx > dy) e.preventDefault();
     }, { passive: false });
     lightbox.addEventListener('touchend', e => {
+      if (isMultiTouch) return;
       const diff = touchStartX - e.changedTouches[0].clientX;
       if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
     }, { passive: true });
